@@ -30,6 +30,12 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Create ECR repository if it doesn't exist
+        run: |
+          aws ecr describe-repositories \
+          --repository-names function-extract-frames-worker || aws ecr create-repository \
+          --repository-name function-extract-frames-worker
+
       - name: Build, tag, and push docker image to Amazon ECR
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
