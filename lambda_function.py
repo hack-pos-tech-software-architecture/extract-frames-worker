@@ -20,7 +20,6 @@ BUCKET_NAME = "upload-videos-1"
 # sqs_client = boto3.client("sqs")
 # SQS_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/seu-id/seu-queue-compressao"
 
-
 def save_frame(image, frame_path):
     cv2.imwrite(frame_path, image)
 
@@ -53,7 +52,7 @@ def extract_frames(video_path, output_folder):
 
     frames = []
     
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:  # Usando ThreadPoolExecutor
         futures = {}
 
         while True:
@@ -76,24 +75,34 @@ def extract_frames(video_path, output_folder):
     reader_thread.join()  # Aguarda a thread de leitura finalizar
     return frames
 
-
 def lambda_handler(event, context):
-    
     for record in event["Records"]:
         message = json.loads(record["body"])
-        file_key = message.get("file_key", None)
+        file_key = message["file_key"]
 
-        print("Mensagem recebida:", message)
+        print(f"Bucket: {BUCKET_NAME}")
+        print(f"File Key: {file_key}")
+
+        # Verifica se o objeto existe no S3
+        try:
+            s3_client.head_object(Bucket=BUCKET_NAME, Key=file_key)
+            print("Objeto encontrado no S3.")
+        except Exception as e:
+            print(f"Erro ao verificar objeto no S3: {str(e)}")
+            raise e
 
         temp_dir = tempfile.mkdtemp()
         local_video_path = os.path.join(temp_dir, "video.mp4")
 
         try:
             s3_client.download_file(BUCKET_NAME, file_key, local_video_path)
+            print("Download do vídeo concluído.")
 
             frames = extract_frames(local_video_path, temp_dir)
+            print(f"Extraídos {len(frames)} frames.")
 
             upload_frames(frames, temp_dir, BUCKET_NAME)
+            print("Upload dos frames concluído.")
 
             # Envia mensagem para próxima etapa
             # message_body = json.dumps({"frames": frames, "bucket": BUCKET_NAME})
