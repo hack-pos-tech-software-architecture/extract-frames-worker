@@ -17,7 +17,7 @@ s3_client = boto3.client("s3", region_name="us-east-1")
 BUCKET_VIDEO_PROCESSOR_S3 = os.environ.get("BUCKET_VIDEO_PROCESSOR_S3")
 
 # Configuração do SQS
-sqs_client = boto3.client("sqs")
+sqs_client = boto3.client("sqs", region_name="us-east-1")
 SQS_QUEUE_ZIP_IMAGES_URL = os.environ.get("SQS_QUEUE_ZIP_IMAGES_URL")
 
 
@@ -120,7 +120,7 @@ def lambda_handler(event, context):
             sqs_client.send_message(
                 QueueUrl=SQS_QUEUE_ZIP_IMAGES_URL,
                 MessageBody=message_body, 
-                MeMessageGroupId="extractFrames",
+                MeMessageGroupId="zipImages",
                 MessageDeduplicationId=str(uuid.uuid4())
             )
 
