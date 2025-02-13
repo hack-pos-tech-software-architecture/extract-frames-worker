@@ -55,11 +55,14 @@ jobs:
         run: |
           while true; do
             STATUS=$(aws lambda get-function --function-name functionExtractFramesWorker --query 'Configuration.State' --output text)
-            if [ "$STATUS" == "Active" ]; then
-              echo "Lambda function is now Active."
+            LAST_UPDATE_STATUS=$(aws lambda get-function --function-name functionExtractFramesWorker --query 'Configuration.LastUpdateStatus' --output text)
+            
+            if [ "$STATUS" == "Active" ] && [ "$LAST_UPDATE_STATUS" == "Successful" ]; then
+              echo "Lambda function is now Active and ready for updates."
               break
             fi
-            echo "Waiting for Lambda function to be Active... Current status: $STATUS"
+            
+            echo "Waiting for Lambda function to be Active and ready... Current status: $STATUS, Last update status: $LAST_UPDATE_STATUS"
             sleep 10
           done
 
