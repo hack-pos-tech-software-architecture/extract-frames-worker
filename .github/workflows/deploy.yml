@@ -14,20 +14,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
         with:
-          python-version: "3.10"
+          go-version: "1.20"
 
-      - name: Install dependencies
+      - name: Build Lambda Function
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Package Lambda Function
-        run: |
-          chmod +x deploy.sh
-          ./deploy.sh
+          GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
+          zip function.zip bootstrap
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
@@ -36,13 +31,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Upload Lambda Package to S3
-        run: |
-          aws s3 cp lambda_function.zip s3://lambdas-package-s3/lambda_function.zip
-
       - name: Deploy to AWS Lambda
         run: |
           aws lambda update-function-code \
-            --function-name function-extract-frames-worker \
-            --s3-bucket lambdas-package-s3 \
-            --s3-key lambda_function.zip
+          --function-name function-extract-frames-worker \
+          --zip-file fileb://function.zip
