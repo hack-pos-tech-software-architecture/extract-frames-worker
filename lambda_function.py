@@ -6,8 +6,8 @@ import cv2
 import tempfile
 
 # Configuração do S3
-s3_client = boto3.client("s3")
-BUCKET_NAME = "seu-bucket-s3"
+s3_client = boto3.client("s3", region_name="us-east-1")
+BUCKET_NAME = "upload-videos-1"
 
 # Configuração do SQS
 # sqs_client = boto3.client("sqs")
