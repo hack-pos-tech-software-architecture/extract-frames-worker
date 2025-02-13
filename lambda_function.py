@@ -120,7 +120,7 @@ def lambda_handler(event, context):
             sqs_client.send_message(
                 QueueUrl=SQS_QUEUE_ZIP_IMAGES_URL,
                 MessageBody=message_body, 
-                MeMessageGroupId="zipImages",
+                MessageGroupId="zipImages",
                 MessageDeduplicationId=str(uuid.uuid4())
             )
 
