@@ -118,7 +118,10 @@ def lambda_handler(event, context):
                 {"frames": frames, "bucket": BUCKET_VIDEO_PROCESSOR_S3}
             )
             sqs_client.send_message(
-                QueueUrl=SQS_QUEUE_EXTRACT_FRAMES_URL, MessageBody=message_body
+                QueueUrl=SQS_QUEUE_EXTRACT_FRAMES_URL, 
+                MessageBody=message_body, 
+                MeMessageGroupId="extractFrames",
+                MessageDeduplicationId=str(uuid.uuid4())
             )
 
         except Exception as e:
