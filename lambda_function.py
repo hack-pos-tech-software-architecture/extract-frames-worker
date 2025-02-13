@@ -25,12 +25,12 @@ def save_frame(image, frame_path):
     cv2.imwrite(frame_path, image)
 
 
-def upload_frames(frames, temp_dir, bucket_name):
+def upload_frames(file_id, frames, temp_dir, bucket_name):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = []
         for frame in frames:
             frame_path = os.path.join(temp_dir, frame)
-            frame_key = f"frames/{uuid.uuid4()}-{frame}"
+            frame_key = f"frames/{file_id}/{frame}"
             futures.append(
                 executor.submit(
                     s3_client.upload_file, frame_path, bucket_name, frame_key
@@ -89,6 +89,7 @@ def lambda_handler(event, context):
     for record in event["Records"]:
         message = json.loads(record["body"])
         file_key = message["file_key"]
+        file_id = message["file_id"]
 
         # Verifica se o objeto existe no S3
         try:
@@ -110,18 +111,22 @@ def lambda_handler(event, context):
             frames = extract_frames(local_video_path, temp_dir)
             print(f"Extraídos {len(frames)} frames.")
 
-            upload_frames(frames, temp_dir, BUCKET_VIDEO_PROCESSOR_S3)
+            upload_frames(file_id, frames, temp_dir, BUCKET_VIDEO_PROCESSOR_S3)
             print("Upload dos frames concluído.")
 
             # Envia mensagem para próxima etapa
             message_body = json.dumps(
-                {"frames": frames, "bucket": BUCKET_VIDEO_PROCESSOR_S3}
+                {
+                    "file_id": file_id,
+                    "frames": frames,
+                    "bucket": BUCKET_VIDEO_PROCESSOR_S3,
+                }
             )
             sqs_client.send_message(
                 QueueUrl=SQS_QUEUE_ZIP_IMAGES_URL,
-                MessageBody=message_body, 
+                MessageBody=message_body,
                 MessageGroupId="zipImages",
-                MessageDeduplicationId=str(uuid.uuid4())
+                MessageDeduplicationId=str(uuid.uuid4()),
             )
 
         except Exception as e:
