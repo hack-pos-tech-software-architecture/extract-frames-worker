@@ -39,5 +39,5 @@ jobs:
     - name: Deploy to AWS Lambda
       run: |
         aws lambda update-function-code \
-          --function-name extract-frames-worker \
+          --function-name function-extract-frames-worker \
           --zip-file fileb://lambda_function.zip
