@@ -11,5 +11,5 @@ rm -rf package/*.dist-info
 cp lambda_function.py package/
 
 cd package
-zip -r ../extract_frames_worker_function.zip .
+zip -r ../lambda_function.zip .
 cd ..

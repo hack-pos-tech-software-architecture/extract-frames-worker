@@ -38,11 +38,11 @@ jobs:
 
       - name: Upload Lambda Package to S3
         run: |
-          aws s3 cp extract_frames_worker_function.zip s3://lambdas-package-s3/extract_frames_worker_function.zip
+          aws s3 cp lambda_function.zip s3://lambdas-package-s3/lambda_function.zip
 
       - name: Deploy to AWS Lambda
         run: |
           aws lambda update-function-code \
             --function-name function-extract-frames-worker \
             --s3-bucket lambdas-package-s3 \
-            --s3-key extract_frames_worker_function.zip
+            --s3-key lambda_function.zip
