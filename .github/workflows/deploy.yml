@@ -45,13 +45,8 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
-      # - name: Upload Lambda Package to S3
-      #   run: |
-      #     aws s3 cp lambda_function.zip s3://lambdas-package-s3/lambda_function_ExtractFramesWorker.zip
-
-      # - name: Deploy to AWS Lambda
-      #   run: |
-      #     aws lambda update-function-code \
-      #       --function-name functionExtractFramesWorker \
-      #       --s3-bucket lambdas-package-s3 \
-      #       --s3-key lambda_function_ExtractFramesWorker.zip
+      - name: Update Lambda Function
+        run: |
+          aws lambda update-function-code \
+            --function-name functionExtractFramesWorker \
+            --image-uri ${{ steps.login-ecr.outputs.registry }}/function-extract-frames-worker:${{ github.sha }}
