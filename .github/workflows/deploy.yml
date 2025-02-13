@@ -51,8 +51,15 @@ jobs:
             --function-name functionExtractFramesWorker \
             --image-uri ${{ steps.login-ecr.outputs.registry }}/function-extract-frames-worker:${{ github.sha }}
 
-      - name: Update Lambda Function Configuration
-        run: |
+          while true; do
+            STATUS=$(aws lambda get-function --function-name functionExtractFramesWorker --query 'Configuration.State' --output text)
+            if [ "$STATUS" == "Active" ]; then
+              break
+            fi
+            echo "Aguardando a função ficar pronta... Estado atual: $STATUS"
+            sleep 10
+          done
+
           aws lambda update-function-configuration \
             --function-name functionExtractFramesWorker \
             --environment "Variables={BUCKET_VIDEO_PROCESSOR_S3=${{ secrets.BUCKET_VIDEO_PROCESSOR_S3 }},SQS_QUEUE_EXTRACT_FRAMES_URL=${{ secrets.SQS_QUEUE_EXTRACT_FRAMES_URL }}}"
