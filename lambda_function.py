@@ -74,6 +74,7 @@ def extract_frames(video_path, output_folder):
 
 
 def lambda_handler(event, context):
+    print(json.dumps(event, indent=4)) 
     for record in event["Records"]:
         message = json.loads(record["body"])
         file_key = message["file_key"]
