@@ -7,6 +7,10 @@ import tempfile
 import queue
 import concurrent.futures
 import threading
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 # Configuração do S3
 s3_client = boto3.client("s3", region_name="us-east-1")
@@ -74,7 +78,7 @@ def extract_frames(video_path, output_folder):
 
 
 def lambda_handler(event, context):
-    print(json.dumps(event, indent=4)) 
+    logger.info("Event structure: %s", json.dumps(event, indent=4))
     for record in event["Records"]:
         message = json.loads(record["body"])
         file_key = message["file_key"]
