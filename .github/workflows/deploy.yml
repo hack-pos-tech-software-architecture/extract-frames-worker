@@ -45,21 +45,26 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
-      - name: Update Lambda Function
+      - name: Update Lambda Function Code
         run: |
           aws lambda update-function-code \
             --function-name functionExtractFramesWorker \
             --image-uri ${{ steps.login-ecr.outputs.registry }}/function-extract-frames-worker:${{ github.sha }}
 
+      - name: Wait for Lambda Function to be Active
+        run: |
           while true; do
             STATUS=$(aws lambda get-function --function-name functionExtractFramesWorker --query 'Configuration.State' --output text)
             if [ "$STATUS" == "Active" ]; then
+              echo "Lambda function is now Active."
               break
             fi
-            echo "Aguardando a função ficar pronta... Estado atual: $STATUS"
+            echo "Waiting for Lambda function to be Active... Current status: $STATUS"
             sleep 10
           done
 
+      - name: Update Lambda Function Configuration
+        run: |
           aws lambda update-function-configuration \
             --function-name functionExtractFramesWorker \
             --environment "Variables={BUCKET_VIDEO_PROCESSOR_S3=${{ secrets.BUCKET_VIDEO_PROCESSOR_S3 }},SQS_QUEUE_EXTRACT_FRAMES_URL=${{ secrets.SQS_QUEUE_EXTRACT_FRAMES_URL }}}"
