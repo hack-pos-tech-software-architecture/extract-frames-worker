@@ -18,7 +18,7 @@ BUCKET_VIDEO_PROCESSOR_S3 = os.environ.get("BUCKET_VIDEO_PROCESSOR_S3")
 
 # Configuração do SQS
 sqs_client = boto3.client("sqs")
-SQS_QUEUE_EXTRACT_FRAMES_URL = os.environ.get("SQS_QUEUE_EXTRACT_FRAMES_URL")
+SQS_QUEUE_ZIP_IMAGES_URL = os.environ.get("SQS_QUEUE_ZIP_IMAGES_URL")
 
 
 def save_frame(image, frame_path):
@@ -118,7 +118,7 @@ def lambda_handler(event, context):
                 {"frames": frames, "bucket": BUCKET_VIDEO_PROCESSOR_S3}
             )
             sqs_client.send_message(
-                QueueUrl=SQS_QUEUE_EXTRACT_FRAMES_URL, 
+                QueueUrl=SQS_QUEUE_ZIP_IMAGES_URL,
                 MessageBody=message_body, 
                 MeMessageGroupId="extractFrames",
                 MessageDeduplicationId=str(uuid.uuid4())
