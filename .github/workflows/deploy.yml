@@ -41,4 +41,4 @@ jobs:
         aws lambda update-function-code \
           --function-name function-extract-frames-worker \
           --s3-bucket lambdas-package-s3 \
-          --s3-key lambda_function.zip
+          --s3-key extract_frames_worker_function.zip
