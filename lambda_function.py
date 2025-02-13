@@ -14,11 +14,11 @@ logger.setLevel(logging.INFO)
 
 # Configuração do S3
 s3_client = boto3.client("s3", region_name="us-east-1")
-BUCKET_NAME = "upload-videos-1"
+BUCKET_NAME = "video-processor-s3"
 
 # Configuração do SQS
-# sqs_client = boto3.client("sqs")
-# SQS_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/seu-id/seu-queue-compressao"
+sqs_client = boto3.client("sqs")
+SQS_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/442042528966/zip-images-queue.fifo"
 
 def save_frame(image, frame_path):
     cv2.imwrite(frame_path, image)
@@ -76,6 +76,7 @@ def extract_frames(video_path, output_folder):
     return frames
 
 def lambda_handler(event, context):
+
     for record in event["Records"]:
         message = json.loads(record["body"])
         file_key = message["file_key"]
@@ -105,8 +106,8 @@ def lambda_handler(event, context):
             print("Upload dos frames concluído.")
 
             # Envia mensagem para próxima etapa
-            # message_body = json.dumps({"frames": frames, "bucket": BUCKET_NAME})
-            # sqs_client.send_message(QueueUrl=SQS_QUEUE_URL, MessageBody=message_body)
+            message_body = json.dumps({"frames": frames, "bucket": BUCKET_NAME})
+            sqs_client.send_message(QueueUrl=SQS_QUEUE_URL, MessageBody=message_body)
 
         except Exception as e:
             print(f"Erro no processamento do vídeo: {str(e)}")
