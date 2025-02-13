@@ -78,7 +78,8 @@ def lambda_handler(event, context):
         message = json.loads(record["body"])
         file_key = message["file_key"]
 
-        print(f"################# ---> {event["Records"]}")
+        print(f"Bucket: {BUCKET_NAME}")
+        print(f"File Key: {file_key}")
 
         temp_dir = tempfile.mkdtemp()
         local_video_path = os.path.join(temp_dir, "video.mp4")
